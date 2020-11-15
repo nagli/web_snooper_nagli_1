@@ -1,0 +1,71 @@
+version: "3.7"
+services:
+  database:
+    image: mariadb:latest
+    container_name: snooper_database
+    command: [
+      "mysqld",
+      "--log-bin-trust-function-creators=ON",
+      "--bind-address=0.0.0.0",
+      "--innodb-flush-method=fsync",
+      "--server-id=${MYSQL_SERVER_ID}",
+      "--binlog-format=row",
+      "--datadir=/var/lib/mysql",
+      "--log-bin=/var/lib/mysql/master",
+      "--binlog-format=row",
+      "--binlog-ignore-db=maxwell",
+      "--log-error=/dev/stderr",
+      "--event-scheduler=OFF",
+      "--performance-schema=ON",
+      "--default-storage-engine=InnoDB",
+      "--sql-mode=NO_ENGINE_SUBSTITUTION",
+      "--max-connections=512",
+      "--wait-timeout=1200",
+      "--innodb-flush-log-at-trx-commit=1",
+      "--innodb-autoinc-lock-mode=2",
+      "--plugin-load-add=ha_blackhole",
+      "--plugin-load-add=ha_federatedx",
+      "--expire-logs-days=0",
+      "--log-output=FILE",
+      "--general_log_file=".${HOSTNAME}.${ENV}."_gen_log.txt",
+      "--general_log"
+    ]
+    domainname: ${HOSTNAME}.${ENV}
+    hostname: db
+    volumes:
+     - mysql-data:/var/lib/mysql
+     - mysql-init:/docker-entrypoint-initdb.d:rw
+    environment:
+     - MYSQL_ROOT_PASSWORD=${MYSQL_ROOT_PASSWORD}
+     - MYSQL_DATABASE=${MYSQL_DATABASE}
+     - MYSQL_USER=${MYSQL_USER}
+     - MYSQL_PASSWORD=${MYSQL_PASSWORD}
+    networks:
+     inside:
+
+  redis:
+    image: ardb:1.0
+    container_name: snooper-redis
+    domainname: ${HOSTNAME}.${ENV}
+    hostname: redis
+    volumes:
+      - ardb-snooper-data:/var/run/ardb
+    expose:
+      - "16379"
+    networks:
+      inside:
+        aliases:
+          - redis.${HOSTNAME}.${ENV}
+      outside:
+        aliases:
+          - redis.${HOSTNAME}.${ENV}
+
+volumes:
+  ardb-snooper-data:
+  mysql-data:
+  mysql-init:
+
+networks:
+  inside:
+    name: snooper--internal
+  outside:

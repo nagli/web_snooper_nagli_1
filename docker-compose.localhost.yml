@@ -1,0 +1,40 @@
+version: "3.7"
+services:
+  redis:
+    restart: on-failure
+
+  database:
+    restart: on-failure
+    volumes:
+      - mysql-data:/var/lib/mysql
+      - mysql-init:/docker-entrypoint-initdb.d:rw
+    ports:
+      - "3322:3306"
+  myadmin:
+    restart: on-failure
+    container_name: snooper-phpmyadmin
+    image: phpmyadmin/phpmyadmin
+    domainname: ${HOSTNAME}.${ENV}
+    hostname: admin
+    environment:
+      PMA_HOST: snooper-database
+      PMA_PORT: 3306
+      PMA_USER: root
+      PMA_PASSWORD: ${MYSQL_ROOT_PASSWORD}
+    depends_on:
+      - database
+    networks:
+      outside:
+      inside:
+
+  commander:
+    restart: on-failure
+    container_name: snooper-commander
+    image: rediscommander/redis-commander:latest
+    domainname: ${HOSTNAME}.${ENV}
+    hostname: cmd
+    environment:
+      - REDIS_HOSTS=local:snooper-redis:16379
+    networks:
+      inside:
+      outside:
