@@ -1,8 +1,6 @@
 version: "3.7"
-services:
-  redis:
-    restart: on-failure
 
+services:
   database:
     restart: on-failure
     volumes:
@@ -26,15 +24,3 @@ services:
     networks:
       outside:
       inside:
-
-  commander:
-    restart: on-failure
-    container_name: snooper-commander
-    image: rediscommander/redis-commander:latest
-    domainname: ${HOSTNAME}.${ENV}
-    hostname: cmd
-    environment:
-      - REDIS_HOSTS=local:snooper-redis:16379
-    networks:
-      inside:
-      outside:

@@ -43,25 +43,7 @@ services:
     networks:
      inside:
 
-  redis:
-    image: ardb:1.0
-    container_name: snooper-redis
-    domainname: ${HOSTNAME}.${ENV}
-    hostname: redis
-    volumes:
-      - ardb-snooper-data:/var/run/ardb
-    expose:
-      - "16379"
-    networks:
-      inside:
-        aliases:
-          - redis.${HOSTNAME}.${ENV}
-      outside:
-        aliases:
-          - redis.${HOSTNAME}.${ENV}
-
 volumes:
-  ardb-snooper-data:
   mysql-data:
   mysql-init:
 
